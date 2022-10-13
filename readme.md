@@ -1,3 +1,6 @@
+#autohelp_plus
+ - 添加了自动从[HoshinoBot 作品索引](https://github.com/pcrbot/HoshinoBot-plugins-index)自动更新服务名的功能
+ - 更换了网页模板（不喜欢换回以前的也行，兼容的）
 # AutoHelp
 
 ## huannai分支上线，可看参考页面的源码
