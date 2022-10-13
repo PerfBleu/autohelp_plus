@@ -9,6 +9,7 @@ from pathlib import Path
 import markdown
 import json
 import datetime
+import requests
 
 public_address = "127.0.0.1"  # 修改为服务器公网ip
 SERVICE_MODE = 0  # 1为服务模式，即读取插件名字和插件help
@@ -22,7 +23,7 @@ sv_help = '''
 '''.strip()
 
 sv = Service(
-    name='网页端',  # 功能名
+    name='帮助网页端',  # 功能名
     use_priv=priv.NORMAL,  # 使用权限
     manage_priv=priv.ADMIN,  # 管理权限
     visible=True,  # 是否可见
@@ -35,6 +36,27 @@ sv = Service(
 @sv.on_fullmatch(["帮助网页端"])
 async def bangzhu(bot, ev):
     await bot.send(ev, sv_help, at_sender=True)
+
+@sv.scheduled_job('cron', hour = "5")
+#@sv.on_fullmatch(["测试帮助"])
+async def get_name_from_index(bot, ev):
+    ret = requests.get("https://github.com/pcrbot/HoshinoBot-plugins-index/raw/master/README.md")
+    patter = re.compile(r'\| \[(.*)\]\((.*)\) \| \[\@.*\].*\|.*\|\n')
+    result = re.findall(patter,ret.text,flags=0)
+    namedic = {}
+    for item in result:
+        name = str(item[0])
+        svname = str(item[1]).split("/")[-1]
+        if svname == "":
+            svname = str(item[1]).split("/")[-2]
+        namedic[svname] = name
+    _path = os.path.join(os.path.dirname(__file__), 'replace.json')
+    predata = load_from_json(_path)
+    for i  in predata.keys():
+        namedic[i] = predata[i]
+    print(namedic)
+    with open(_path,"w",encoding="utf-8") as f:
+        json.dump(namedic,f,ensure_ascii=False)
 
 
 work_env = Path(os.path.dirname(__file__))
